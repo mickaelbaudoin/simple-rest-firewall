@@ -1,0 +1,26 @@
+{
+    "name": "mickaelbaudoin/simple-rest-firewall",
+    "description": "Firewall for API REST",
+    "type": "project",
+    "homepage": "https://github.com/mickaelbaudoin/simple-rest-firewall",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "BAUDOIN Mickael",
+            "homepage": "https://github.com/mickaelbaudoin/"
+        }
+    ],
+    "require": {
+        "php": "^5.5",
+    }
+    "autoload": {
+        "psr-4": {
+            "SimpleRestFirewall\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SimpleRestFirewallTest\\": "test/"
+        }
+    }
+}
