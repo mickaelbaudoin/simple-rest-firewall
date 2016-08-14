@@ -17,21 +17,19 @@ class AuthorizationMiddleware {
      */
     private $user = null;
     
-    /**
-     * @var IUserService
-     */
-    private $userService = null;
-    
     private $ignorePath = array();
+    
+    private $router;
     
     /**
      * @var IAclService
      */
     private $aclService = null;
     
-    public function __construct(IUserService $userService, IAclService $aclService) {
-        $this->userService = $userService;
+    public function __construct(IUser $user, IAclService $aclService, \SimpleRestFirewall\IRouter $router) {
+        $this->user = $user;
         $this->aclService = $aclService;
+        $this->router = $router;
     }
     
     public function addIgnorePath($path){
@@ -39,7 +37,6 @@ class AuthorizationMiddleware {
     }
     
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next){
-        
         if(!$this->ignoringPath($request)){
             
             if($this->isAuthorized($request)){
@@ -48,14 +45,14 @@ class AuthorizationMiddleware {
             }else{
                 $response = $response->withStatus(403);
                 $result = array('message' => 'forbidden');
-                $response->write(json_encode($result));
+                $response->getBody()->write(json_encode($result));
                 return $response->withHeader('Content-Type', 'application/json');
             }
             
             $response = $response->withStatus(401);
             $response->withHeader('Content-Type', 'application/json');
             $result = array('message' => 'unauthorized');
-            $response->write(json_encode($result));
+            $response->getBody()->write(json_encode($result));
             return $response;
             
         }
@@ -90,15 +87,16 @@ class AuthorizationMiddleware {
      * @return boolean
      */
     protected function isAuthorized(ServerRequestInterface $request){
-        $routeResult = $request->getAttribute('Zend\Expressive\Router\RouteResult');
-        
-        if($routeResult != null){
-            $routeName   = $routeResult->getMatchedRouteName();
-
+        $routeName = $this->router->getRouteName($request->getUri());
+        if($routeName != null){
+            
             $acl = $this->aclService->findAclByResourceName($routeName);
+            if($acl == null){
+                return false;
+            }
+            
             $permissions = explode(',',$acl->getPermissions());
             $method = $request->getMethod();
-
             //On vérifit si tout le monde a les droits
             if($permissions[2] == MappingPermission::ALL){
                 return true;

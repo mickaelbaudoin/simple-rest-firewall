@@ -10,9 +10,12 @@
             "homepage": "https://github.com/mickaelbaudoin/"
         }
     ],
+    "require-dev": {
+        "guzzlehttp/guzzle" : "6.2.1"
+    },
     "require": {
-        "php": "^5.5",
-    }
+        "php": "^5.5"
+    },
     "autoload": {
         "psr-4": {
             "SimpleRestFirewall\\": "src/"

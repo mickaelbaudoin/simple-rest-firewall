@@ -13,5 +13,5 @@ interface IUserService {
     
     public function findUserByFilters(ServerRequestInterface $request);
     
-    public function generateToken();
+    public function generateToken(IUser $user);
 }

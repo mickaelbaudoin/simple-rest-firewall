@@ -12,7 +12,7 @@ abstract class MappingPermission {
     const READ = 2;
     const DENY_ALL = 0;
     
-    static function getPermissionRequiredByMethod(string $method){
+    static function getPermissionRequiredByMethod($method){
             switch ($method){
                 case 'POST':
                     return self::ALL;
