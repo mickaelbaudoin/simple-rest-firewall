@@ -97,23 +97,23 @@ class AuthorizationMiddleware {
             
             $permissions = explode(',',$acl->getPermissions());
             $method = $request->getMethod();
-            //On vérifit si tout le monde a les droits
+            //If Other are all permission
             if($permissions[2] == MappingPermission::ALL){
                 return true;
             }
 
-            //On vérifit si l'émetteur de la requete est le prorietaire de cette ressource
+            //If author is owner of resource
             if($acl->getOwnerUser()->getUserId() == $this->user->getUserId()){
-                //On vérifit les droit du proprietaire
+                //verify permission owner
                 if(MappingPermission::getPermissionRequiredByMethod($method) <= $permissions[0]){
                     return true;
                 }
             }
 
-            //On vérifit si le groupe de l'utilisateur a les droit
+            //If groups are permission of resource
             foreach($this->user->getGroups() as $group){
                 if($group->getGroupId() == $acl->getGroup()->getGroupId()){
-                    //On vérifit les droit du groupe
+                    //Verify permission group
                     if(MappingPermission::getPermissionRequiredByMethod($method) <= $permissions[1]){
                         return true;
                     }
