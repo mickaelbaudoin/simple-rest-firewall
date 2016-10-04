@@ -1,6 +1,6 @@
 <?php
 
-namespace SimpleRestFirewall;
+namespace MB\SimpleRestFirewall;
 
 use Psr\Http\Message\ServerRequestInterface;
 

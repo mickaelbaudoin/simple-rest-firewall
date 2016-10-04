@@ -18,12 +18,12 @@
     },
     "autoload": {
         "psr-4": {
-            "SimpleRestFirewall\\": "src/"
+            "MB\\SimpleRestFirewall\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "SimpleRestFirewallTest\\": "test/"
+            "MB\\SimpleRestFirewallTest\\": "test/"
         }
     }
 }
