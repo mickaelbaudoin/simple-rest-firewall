@@ -11,7 +11,7 @@ Entities : IUser, IGroup and IAcl .
 
 ### SQL
 ---------------------------------
-CREATE TABLE user 
+CREATE TABLE user ( 
    user_id INT(11) NOT NULL AUTO_INCREMENT,
    user_login VARCHAR(255) NOT NULL,
    user_token VARCHAR(255) DEFAULT NULL,
