@@ -9,7 +9,7 @@ Entities : IUser, IGroup and IAcl .
 
 ![alt text](https://github.com/mickaelbaudoin/simple-rest-firewall/blob/master/src/doc/img/mcd.jpg "MCD")
 
-### SQL
+### SQL (Mysql)
 ---------------------------------
 CREATE TABLE user ( 
    user_id INT(11) NOT NULL AUTO_INCREMENT,
