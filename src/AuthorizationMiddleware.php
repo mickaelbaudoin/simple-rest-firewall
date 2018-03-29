@@ -11,34 +11,31 @@ use Psr\Http\Message\ServerRequestInterface;
  * @author mickael
  */
 class AuthorizationMiddleware {
-    
+
     /**
      * @var IUser
      */
     private $user = null;
-    
+
     private $ignorePath = array();
-    
-    private $router;
-    
+
     /**
      * @var IAclService
      */
     private $aclService = null;
-    
-    public function __construct(IUser $user, IAclService $aclService, \SimpleRestFirewall\IRouter $router) {
+
+    public function __construct(IUser $user, IAclService $aclService) {
         $this->user = $user;
         $this->aclService = $aclService;
-        $this->router = $router;
     }
-    
+
     public function addIgnorePath($path){
         array_push($this->ignorePath, $path);
     }
-    
+
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next){
         if(!$this->ignoringPath($request)){
-            
+
             if($this->isAuthorized($request)){
                 return $next($request,$response);
             //Retourne statut 403
@@ -48,79 +45,70 @@ class AuthorizationMiddleware {
                 $response->getBody()->write(json_encode($result));
                 return $response->withHeader('Content-Type', 'application/json');
             }
-            
+
             $response = $response->withStatus(401);
             $response->withHeader('Content-Type', 'application/json');
             $result = array('message' => 'unauthorized');
             $response->getBody()->write(json_encode($result));
             return $response;
-            
+
         }
-        
+
         return $next($request,$response);
     }
-    
+
     protected function ignoringPath(ServerRequestInterface $request){
         $path = $request->getUri()->getPath();
-        
+
         foreach($this->ignorePath as $ignorePath){
             if(preg_match("/$ignorePath/", $path)){
                 return true;
             }
         }
-        
+
         return false;
-        
+
     }
-    
+
     /**
      * Vérifi les accès a une ressource
-     * 
+     *
      * Le système de permission est basé sur celui de linux
-     * 
+     *
      * Les permissions possible sont 6 , 2 et 0 (ALL/READ/DENY)
      * Les permissions respecte une syntaxe et un ordre précis 6,2,0 (Proprietaire,Groupe,Autre)
-     * 
+     *
      * Chaque method http correspond a une permission requise (MappingPermission)
-     * 
+     *
      * @param \Psr\Http\Message\ServerRequestInterface $request
      * @return boolean
      */
     protected function isAuthorized(ServerRequestInterface $request){
-        $routeName = $this->router->getRouteName($request->getUri());
-        if($routeName != null){
-            
-            $acl = $this->aclService->findAclByResourceName($routeName);
-            if($acl == null){
-                return false;
-            }
-            
-            $permissions = explode(',',$acl->getPermissions());
-            $method = $request->getMethod();
-            //If Other are all permission
-            if($permissions[2] == MappingPermission::ALL){
-                return true;
-            }
+        $rsourceNameArr = explode('/',substr($request->getUri()->getPath(),1,-1));
+        $resourceName = $rsourceNameArr[0];
+        $acl = $this->aclService->findAclByResourceName($resourceName);
+        if($acl == null){
+            return false;
+        }
 
-            //If author is owner of resource
-            if($acl->getOwnerUser()->getUserId() == $this->user->getUserId()){
-                //verify permission owner
-                if(MappingPermission::getPermissionRequiredByMethod($method) <= $permissions[0]){
+        $permissions = explode(',',$acl->getPermissions());
+        $method = $request->getMethod();
+        //If Other are all permission
+        if($permissions[2] == MappingPermission::ALL){
+            return true;
+        }
+
+        //If groups are permission of resource
+        foreach($this->user->getGroups() as $group){
+            if($group->getGroupId() == $acl->getGroup()->getGroupId()){
+              
+                //Verify permission group
+                if(MappingPermission::getPermissionRequiredByMethod($method) <= $permissions[1]){
                     return true;
                 }
             }
-
-            //If groups are permission of resource
-            foreach($this->user->getGroups() as $group){
-                if($group->getGroupId() == $acl->getGroup()->getGroupId()){
-                    //Verify permission group
-                    if(MappingPermission::getPermissionRequiredByMethod($method) <= $permissions[1]){
-                        return true;
-                    }
-                }
-            }
         }
-        
+
         return false;
     }
 }
